@@ -1,7 +1,54 @@
-# yakyubu-line-bot
+# yakyubu-line-bot ⚾️
 
-野球部専用のLINE公式アカウント。下部メニューを「大会メンバー / 試合日程 / 練習日程 / 連絡」の4タブに分け、
+野球部専用のLINE公式アカウント（LINE Bot）。下部メニューを「大会メンバー / 試合日程 / 練習日程 / 連絡」の4タブに分け、
 これまで大会ごとに作っていた専用グループLINEを1つの公式アカウントに集約する。
+
+![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-4.x-000000?logo=express&logoColor=white)
+![LINE Messaging API](https://img.shields.io/badge/LINE-Messaging_API-00C300?logo=line&logoColor=white)
+![Python](https://img.shields.io/badge/Python-Pillow-3776AB?logo=python&logoColor=white)
+
+## 開発の背景（解決したかった課題）
+
+所属する野球部では、大会があるたびに「その大会用のグループLINE」を新しく作っていた。
+その結果、
+
+- 大会が終わるたびにグループが増え、過去の試合日程・連絡が埋もれる
+- 部員は複数のグループに入り直す必要があり、通知も分散する
+- 誰でも編集できてしまい、情報が上書き・錯綜する
+
+という問題があった。これを **1つのLINE公式アカウントに集約** し、
+リッチメニューのタブで用途を分け、**登録・編集は管理者（監督・マネージャー）のみ**に制限することで解決した。
+
+## 技術スタック
+
+| 分類 | 使用技術 |
+|---|---|
+| サーバー | Node.js / Express |
+| 外部API | LINE Messaging API（`@line/bot-sdk`） |
+| データ保存 | JSONファイルDB（ネイティブ依存なしで無料PaaSにそのまま乗る設計） |
+| 定期実行 | `node-cron`（毎朝7:00の予定リマインド） |
+| 画像生成 | Python + Pillow（リッチメニュー画像を自動生成） |
+| デプロイ | Render（無料プラン）／ローカル動作確認は ngrok |
+
+## 技術的な工夫・アピールポイント
+
+- **関心の分離**：Webhook処理（`index.js`）・コマンド解析（`parser.js`）・データ層（`db.js`）を分割し、
+  ルーティングは1つの `switch` に集約して見通しよく実装。
+- **権限制御**：`requireAdmin()` で管理者チェックを1か所に共通化。閲覧は全部員、更新系は管理者のみと明確に分離。
+- **依存を持たないデータ層**：SQLite等を使わずJSONファイルDBを自作し、無料PaaS（Render）で追加設定なしに動く構成に。
+  破損時に備え `db.json.broken-*` へ退避するフェイルセーフも実装。
+- **UX重視のリッチメニュー**：4タブをエイリアスで切り替える構成を `setup-richmenu.js` で自動セットアップ（再実行しても安全な冪等設計）。
+- **エラーハンドリング**：Webhookとコマンド処理を try/catch で包み、ユーザーには日本語のわかりやすいメッセージを返す。
+- **秘密情報の分離**：トークン・合言葉はすべて `.env` に外出しし、`.env.example` で必要な変数を明示。
+
+## 画面イメージ（リッチメニュー）
+
+4タブを切り替えるリッチメニュー。画像は `generate_richmenu.py`（Python + Pillow）で生成している。
+
+| 大会メンバー | 試合日程 | 練習日程 | 連絡 |
+|:---:|:---:|:---:|:---:|
+| ![members](richmenu-assets/richmenu_members.png) | ![games](richmenu-assets/richmenu_games.png) | ![practices](richmenu-assets/richmenu_practices.png) | ![contact](richmenu-assets/richmenu_contact.png) |
 
 ## できること
 
