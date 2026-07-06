@@ -1,4 +1,16 @@
+# 依存関係
 node_modules/
+
+# 環境変数(秘密情報)
 .env
+
+# 実行時に自動生成されるデータ本体
 db.json
 db.json.broken-*
+
+# 配布用アーカイブ・インストーラ(リポジトリに含めない)
+*.zip
+*.msi
+files.zip
+ngrok-*
+node-v*
